@@ -3,7 +3,7 @@
 We will be writing a simple linkschecker in both `sequential` and `asynchronous` style in nim
 
 ## Step 0: Imports
-```
+```nim
 import  os, httpclient
 import strutils
 import times
@@ -13,7 +13,7 @@ import asyncdispatch
 
 
 ## Step 1: Data types
-```
+```nim
 type
     LinkCheckResult = ref object 
         link: string
@@ -23,7 +23,7 @@ LinkCheckResult is a simple representation for a link and its state
 
 
 ## Step 2: GO Sequential!
-```
+```nim
 proc checkLink(link: string) : LinkCheckResult  =
     var client = newHttpClient()
     try:
@@ -37,7 +37,7 @@ Here, we have a proc `checkLink` takes a link and returns `LinkCheckResult`
 - `response.code` gives us the HTTP status code, and we consider a link is valid if its status == 200
 - `client.get` raises error for invalid structured links that's why we wrapped it a `try/except` block
 
-```
+```nim
 proc sequentialLinksChecker(links: seq[string]): void = 
     for index, link in links:
         if link.strip() != "":
@@ -61,7 +61,7 @@ On my lousy internet it took 7.7 seconds to finish :(
 ## Step 3: GO ASYNC!
 We can do better than waiting on IO requests to finish
 
-```
+```nim
 proc checkLinkAsync(link: string): Future[LinkCheckResult] {.async.} =
     var client = newAsyncHttpClient()
 
@@ -82,7 +82,7 @@ when the eventloop comes back because the future now has some updates
 - clearly, if the `future` failed we return the link with a `false` state
 - otherwise, we get the `response` object that's enclosed in the future by calling `read`
 
-```
+```nim
 
 proc asyncLinksChecker(links: seq[string]) {.async.} = 
     # client.maxRedirects = 0
@@ -116,7 +116,7 @@ https://github.com is true
 
 
 ## Step 4 simple cli
-```
+```nim
 proc main()=
     echo "Param count: ", paramCount()
     if paramCount() == 1:
@@ -142,7 +142,7 @@ the only interesting part is `waitFor asyncLinksChecker(links)` as we said to ca
 
 ## Extra, threading
 
-```
+```nim
 import threadpool
 proc checkLinkParallel(link: string) : LinkCheckResult {.thread.} =
     var client = newHttpClient()
@@ -153,7 +153,7 @@ proc checkLinkParallel(link: string) : LinkCheckResult {.thread.} =
 ```
 Same as before, only `thread` pragma i used to note that proc will be executed within a thread
 
-```
+```nim
 proc threadsLinksChecker(links: seq[string]): void = 
     var LinkCheckResults = newSeq[FlowVar[LinkCheckResult]]()
     for index, link in links:
